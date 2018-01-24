@@ -1,0 +1,23 @@
+{
+  "name": "bamazon",
+  "version": "1.0.0",
+  "description": "Run your own online marketplace.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SteveSonoa/bamazon.git"
+  },
+  "author": "Steve Marshall",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SteveSonoa/bamazon/issues"
+  },
+  "homepage": "https://github.com/SteveSonoa/bamazon#readme",
+  "dependencies": {
+    "inquirer": "^5.0.1",
+    "mysql": "^2.15.0"
+  }
+}
