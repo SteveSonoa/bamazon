@@ -2,57 +2,97 @@ var mysql = require('mysql');
 var inquirer = require('inquirer');
 var connection = require('./constructors/keys.js');
 
-connection.connect(function(err){
-	// console.log("Connected as ID: " + connection.threadId);
-	// Display table of items available with id, name, & price where quantity > 0
-	readProducts();
+// connect to the mysql server and sql database
+connection.connect(function(err) {
+  if (err) throw err;
+  // run the start function after the connection is made to prompt the user
+  readProducts();
+});
 
-	userOptions = [];
-	// Display inquirer of all items with quantity > 0
-	connection.query("SELECT * FROM products WHERE stock_quantity > 0", function(err, res) {
-		if(err) throw err;
-		for (let i = 0; i < res.length; i++) {
-			userOptions.push(res[i].product_name);
-		}
-
-		// Inquirer prompt with all selected items in a list
+function buyItem() {
+	// query the database for all items with at least 1 in stock
+	connection.query("SELECT * FROM products WHERE stock_quantity > 0", function(err, results) {
+		if (err) throw err;
+		// once you have the items, prompt the user for which they'd like to buy
 		inquirer.prompt([
-		{
-			type: "list",
-			message: "What would you like to purchase?",
-			choices: userOptions,
-			name: "choice"
-		},
-		// User to input how many of each item wanted
-		{
-			type: "input",
-			message: "How many of these would you like to purchase?",
-			name: "quantity",
-			// Ensure a number is entered
-			validate: function(value) {
-				if (isNaN(value) === false) {
-					return true;
-				}
-				return false;
+			{
+				name: "choice",
+				type: "list",
+				choices: function() {
+					var choiceArray = [];
+					for (var i = 0; i < results.length; i++) {
+						choiceArray.push(results[i].product_name);
+					}
+					return choiceArray;
+				},
+				message: "What item would you like to purchase?"
+			},
+			{
+				name: "quantity",
+				type: "input",
+				message: "How many would you like to purchase?"
 			}
-		}
-		]).then(function(answers) {
-			connection.query("SELECT * FROM products WHERE product_name = " + answers.choice, function(err2, res2) {
-				if(err2) throw err2;
-				// If # purchased > quantity, deny it
-				if(answers.quantity > res2.stock_quantity) {
-					console.log("I'm sorry; we only have " + res2.stock_quantity + " of those in stock.");
+		])
+		.then(function(answer) {
+			// get the information of the chosen item
+			var chosenItem;
+			for (var i = 0; i < results.length; i++) {
+				if (results[i].product_name === answer.choice) {
+					chosenItem = results[i];
 				}
-				// Else purchase it
-				else {
-					// Update MySQL quantities
-					// Provide user with total price
+			}
 
-				}
-			});
+			// determine if quantity is high enough
+			if (chosenItem.stock_quantity > parseInt(answer.quantity)) {
+				// There is enough; reduce the stock in the database and provide the customer's total
+				var newQuantity = parseInt(chosenItem.stock_quantity) - answer.quantity;
+				var totalPrice = parseFloat(chosenItem.price) * answer.quantity;
+				connection.query(
+					"UPDATE products SET ? WHERE ?",
+					[
+						{
+							stock_quantity: newQuantity
+						},
+						{
+							item_id: chosenItem.item_id
+						}
+					],
+					function(error) {
+						if (error) throw err;
+						console.log("Thanks for shopping! Your total is $" + totalPrice);
+						moreShopping();
+					}
+				);
+			}
+			else {
+				// bid wasn't high enough, so apologize and start over
+				console.log("I'm sorry, we only have " + chosenItem.stock_quantity + " of those.");
+				moreShopping();
+			}
 		});
 	});
-});
+}
+
+function moreShopping() {
+	inquirer
+		.prompt([
+		{
+			name: "again",
+			type: "confirm",
+			message: "Would you like to continue shopping?"
+		}
+	])
+	.then(function(answer) {
+		if(answer.again) {
+			readProducts();
+		}
+		else {
+			console.log("Please come again soon!");
+			connection.end();
+		}
+	});	
+}
+
 
 function readProducts() {
 	// console.log("Selecting all products...\n");
@@ -82,6 +122,7 @@ function readProducts() {
 			console.log("| " + item_id + " | " + product_name + " | " + department_name + " | " + price + " |");
 		}
 		console.log("+----+------------------------------------------+------------------+----------+");
-		connection.end();
 	});
+	buyItem();
+
 }
