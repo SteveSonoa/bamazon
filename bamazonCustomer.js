@@ -65,7 +65,7 @@ function buyItem() {
 				);
 			}
 			else {
-				// bid wasn't high enough, so apologize and start over
+				// stock_quantity wasn't high enough, so apologize and start over
 				console.log("I'm sorry, we only have " + chosenItem.stock_quantity + " of those.");
 				moreShopping();
 			}
@@ -95,7 +95,6 @@ function moreShopping() {
 
 
 function readProducts() {
-	// console.log("Selecting all products...\n");
 	connection.query("SELECT * FROM products WHERE stock_quantity > 0", function(err, res) {
 		if (err) throw err;
 		// Log all results of the SELECT statement

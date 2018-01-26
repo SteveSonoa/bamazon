@@ -2,23 +2,6 @@ var mysql = require('mysql');
 var inquirer = require('inquirer');
 var connection = require('./constructors/keys.js');
 
-// Display options of "View Products For Sale", "View Low Inventory", "Add To Inventory", and "Add New Product"
-// View Products For Sale
-	// Display all available items, including itemID, name, price, quantity
-// View Low Inventory
-	// List all items (identical to View Products For Sale) with quantity less than 5
-// Add To Inventory
-	// Inquirer list all items (name | qty)
-	// Select an item to add qty to
-	// Input how many to add
-	// Update MySQL
-// Add New Product
-	// Input name (validate length)
-	// Input description (validate length)
-	// Input price (validate double)
-	// Input qty (validate integer)
-	// Update MySQL
-
 // * Create a new Node application called `bamazonManager.js`. Running this application will:
 //   * List a set of menu options:
 //     * View Products for Sale
@@ -30,54 +13,59 @@ var connection = require('./constructors/keys.js');
 //   * If a manager selects `Add to Inventory`, your app should display a prompt that will let the manager "add more" of any item currently in the store.
 //   * If a manager selects `Add New Product`, it should allow the manager to add a completely new product to the store.
 
+listOptions();
+
 function listOptions() {
-	// query the database for all items with at least 1 in stock
-	connection.query("SELECT * FROM products WHERE stock_quantity > 0", function(err, results) {
-		if (err) throw err;
-		// once you have the items, prompt the user for which they'd like to buy
-		inquirer.prompt([
-			{
-				name: "choice",
-				type: "list",
-				choices: ["View Products For Sale", "View Low Inventory", "Add To Inventory", "Add New Product", "Quit"],
-				message: "What would you like to do?"
-			}
-		])
-		.then(function(answer) {
-			if(answer.choice === "View Products Fo Sale") {
-				viewProducts();
-			}
-			else if(answer.choice === "View Low Inventory") {
-				// viewLowInventory();
-			}
-			else if(answer.choice === "Add To Inventory") {
-				// addInventory();
-			}
-			else if(answer.choice === "Add New Product") {
-				// addNewProduct();
-			}
-			else {
-				console.log("Have a nice day!");
-				connection.end();
-			}
-		});
+	// Display options of "View Products For Sale", "View Low Inventory", "Add To Inventory", and "Add New Product"
+	inquirer.prompt([
+		{
+			name: "choice",
+			type: "list",
+			choices: ["View Products For Sale", "View Low Inventory", "Add To Inventory", "Add New Product", "Quit"],
+			message: "What would you like to do?"
+		}
+	])
+	.then(function(answer) {
+		if(answer.choice === "View Products For Sale") {
+			viewProducts();
+		}
+		else if(answer.choice === "View Low Inventory") {
+			viewProducts(true);
+		}
+		else if(answer.choice === "Add To Inventory") {
+			// addInventory();
+		}
+		else if(answer.choice === "Add New Product") {
+			// addNewProduct();
+		}
+		else {
+			console.log("Have a nice day!");
+			connection.end();
+		}
 	});
 }
 
-function viewProducts() {
-	// console.log("Selecting all products...\n");
-	connection.query("SELECT * FROM products WHERE stock_quantity > 0", function(err, res) {
+// View Products For Sale -- AND -- View Low Inventory
+function viewProducts(low) {
+	var q = "SELECT * FROM products";
+	// If a true value was passed, view just the low inventory instead of all of it
+	if(low) {
+		q = "SELECT * FROM products WHERE stock_quantity < 5";
+	}
+	connection.query(q, function(err, res) {
 		if (err) throw err;
 		// Log all results of the SELECT statement
 		console.log("+----+------------------------------------------+------------------+----------+-----+");
 		console.log("|  # | NAME                                     | DEPARTMENT       | PRICE    | QTY |");
 		console.log("+----+------------------------------------------+------------------+----------+-----+");
+		// Display all available items, including itemID, name, price, quantity
 		for (let i = 0; i < res.length; i++) {
 			let item_id = res[i].item_id.toString();
 			let product_name = res[i].product_name;
 			let department_name = res[i].department_name;
 			let price = "$" + res[i].price;
 			let stock_quantity = res[i].stock_quantity.toString();
+			// Update the temp strings by including white space. This will size the tables correctly.
 			while(item_id.length < 2) {
 				item_id = " " + item_id;
 			}
@@ -98,4 +86,21 @@ function viewProducts() {
 		console.log("+----+------------------------------------------+------------------+----------+-----+\n");
 		listOptions();
 	});
+}
+
+// Add To Inventory
+function addInventory() {
+	// Inquirer list all items (name | qty)
+	// Select an item to add qty to
+	// Input how many to add
+	// Update MySQL
+}
+
+// Add New Product
+function addNewProduct() {
+	// Input name (validate length)
+	// Input description (validate length)
+	// Input price (validate double)
+	// Input qty (validate integer)
+	// Update MySQL
 }
