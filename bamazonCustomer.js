@@ -30,7 +30,13 @@ function buyItem() {
 			{
 				name: "quantity",
 				type: "input",
-				message: "How many would you like to purchase?"
+				message: "How many would you like to purchase?",
+				validate: function(value) {
+					if (isNaN(value) === false) {
+						return true;
+					}
+					return false;
+				}
 			}
 		])
 		.then(function(answer) {
@@ -58,15 +64,15 @@ function buyItem() {
 						}
 					],
 					function(error) {
-						if (error) throw err;
-						console.log("Thanks for shopping! Your total is $" + totalPrice);
+						if (error) throw error;
+						console.log("Thanks for shopping! Your total is $" + totalPrice + ".\n");
 						moreShopping();
 					}
 				);
 			}
 			else {
 				// stock_quantity wasn't high enough, so apologize and start over
-				console.log("I'm sorry, we only have " + chosenItem.stock_quantity + " of those.");
+				console.log("I'm sorry, we only have " + chosenItem.stock_quantity + " of those.\n");
 				moreShopping();
 			}
 		});
@@ -79,7 +85,7 @@ function moreShopping() {
 		{
 			name: "again",
 			type: "confirm",
-			message: "Would you like to continue shopping?"
+			message: "Would you like to continue shopping?\n"
 		}
 	])
 	.then(function(answer) {
@@ -87,7 +93,7 @@ function moreShopping() {
 			readProducts();
 		}
 		else {
-			console.log("Please come again soon!");
+			console.log("Please come again soon!\n");
 			connection.end();
 		}
 	});	

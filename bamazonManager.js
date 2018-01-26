@@ -36,7 +36,7 @@ function listOptions() {
 			addInventory();
 		}
 		else if(answer.choice === "Add New Product") {
-			// addNewProduct();
+			addNewProduct();
 		}
 		else {
 			console.log("Have a nice day!");
@@ -142,12 +142,6 @@ function addInventory() {
 			);
 		});
 	});
-
-
-	// Inquirer list all items (name | qty)
-	// Select an item to add qty to
-	// Input how many to add
-	// Update MySQL
 }
 
 // Add New Product
@@ -157,4 +151,54 @@ function addNewProduct() {
 	// Input price (validate double)
 	// Input qty (validate integer)
 	// Update MySQL
+	inquirer.prompt([
+		{
+			name: "product_name",
+			type: "input",
+			message: "What is the name of the new product?"
+		},
+		{
+			name: "department_name",
+			type: "list",
+			choices: ["Electronics", "Music", "Grocery", "Stationary", "Home", "Clothing"],
+			message: "Which department does this belong to?"
+		},
+		{
+			name: "price",
+			type: "input",
+			message: "What is the MSRP of this item? (Please only input a number.)",
+			validate: function(value) {
+				if (isNaN(value) === false) {
+					return true;
+				}
+				return false;
+			}
+		},
+		{
+			name: "stock_quantity",
+			type: "input",
+			message: "How many should be ordered?",
+			validate: function(value) {
+				if (isNaN(value) === false) {
+					return true;
+				}
+				return false;
+			}
+		}
+	])
+	.then(function(answer) {
+		connection.query(
+			"INSERT INTO products (product_name, department_name, price, stock_quantity) VALUES ('" + answer.product_name + "', '" + answer.department_name + "', '" + answer.price + "', '" + answer.stock_quantity + "')",
+			function(error) {
+				if (error) {
+					console.log(error);
+					throw error;
+				}
+				console.log("You have added " + answer.stock_quantity + " units of " + answer.product_name + ".");
+				listOptions();
+			}
+		);
+	});
+
 }
+
