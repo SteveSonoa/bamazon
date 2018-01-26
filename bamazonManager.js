@@ -33,7 +33,7 @@ function listOptions() {
 			viewProducts(true);
 		}
 		else if(answer.choice === "Add To Inventory") {
-			// addInventory();
+			addInventory();
 		}
 		else if(answer.choice === "Add New Product") {
 			// addNewProduct();
@@ -90,6 +90,60 @@ function viewProducts(low) {
 
 // Add To Inventory
 function addInventory() {
+	// query the database for all items with at least 1 in stock
+	connection.query("SELECT item_id, product_name, stock_quantity FROM products", function(err, results) {
+		if (err) throw err;
+		// once you have the items, prompt the user for which they'd like to buy
+		inquirer.prompt([
+			{
+				name: "choice",
+				type: "list",
+				choices: function() {
+					var choiceArray = [];
+					for (var i = 0; i < results.length; i++) {
+						choiceArray.push(results[i].product_name);
+					}
+					return choiceArray;
+				},
+				message: "What item would you like to add more of?"
+			},
+			{
+				name: "quantity",
+				type: "input",
+				message: "How many more should be ordered?"
+			}
+		])
+		.then(function(answer) {
+			// get the information of the chosen item
+			var chosenItem;
+			for (var i = 0; i < results.length; i++) {
+				if (results[i].product_name === answer.choice) {
+					chosenItem = results[i];
+				}
+			}
+
+			// There is enough; reduce the stock in the database and provide the customer's total
+			var newQuantity = parseInt(chosenItem.stock_quantity) + parseInt(answer.quantity);
+			connection.query(
+				"UPDATE products SET ? WHERE ?",
+				[
+					{
+						stock_quantity: newQuantity
+					},
+					{
+						item_id: chosenItem.item_id
+					}
+				],
+				function(error) {
+					if (error) throw err;
+					console.log("You have added " + answer.quantity + " units. You now have " + newQuantity + ".");
+					listOptions();
+				}
+			);
+		});
+	});
+
+
 	// Inquirer list all items (name | qty)
 	// Select an item to add qty to
 	// Input how many to add
