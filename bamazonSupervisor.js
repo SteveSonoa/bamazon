@@ -33,7 +33,7 @@ function listOptions() {
 			// viewProductSales();
 		}
 		else if(answer.choice === "Create New Department") {
-			// createDepartment();
+			createDepartment();
 		}
 		else {
 			console.log("Have a nice day!");
@@ -87,19 +87,14 @@ function viewProductSales() {
 
 // Add New Product
 function createDepartment() {
-	// Input name (validate length)
-	// Input description (validate length)
-	// Input price (validate double)
-	// Input qty (validate integer)
-	// Update MySQL
 	inquirer.prompt([
 		{
-			name: "product_name",
+			name: "department_name",
 			type: "input",
 			message: "What is the name of the new department?"
 		},
 		{
-			name: "price",
+			name: "overhead_costs",
 			type: "input",
 			message: "What is the overhead of this department? (Please only input a number.)",
 			validate: function(value) {
@@ -118,7 +113,7 @@ function createDepartment() {
 					console.log(error);
 					throw error;
 				}
-				console.log("You have added " + answer.stock_quantity + " units of " + answer.product_name + ".");
+				console.log("You have added a " + answer.department_name + " department with an overhead cost of $" + answer.overhead_costs + ".");
 				listOptions();
 			}
 		);
