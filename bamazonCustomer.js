@@ -57,7 +57,8 @@ function buyItem() {
 					"UPDATE products SET ? WHERE ?",
 					[
 						{
-							stock_quantity: newQuantity
+							stock_quantity: newQuantity,
+							product_sales: (parseFloat(chosenItem.product_sales) + parseFloat(totalPrice)).toFixed(2)
 						},
 						{
 							item_id: chosenItem.item_id
