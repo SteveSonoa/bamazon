@@ -16,7 +16,7 @@ function listOptions() {
 	])
 	.then(function(answer) {
 		if(answer.choice === "View Product Sales By Department") {
-			// viewProductSales();
+			viewProductSales();
 		}
 		else if(answer.choice === "Create New Department") {
 			createDepartment();
@@ -41,7 +41,11 @@ function viewProductSales() {
 	// | ------------- | --------------- | --------------- | ------------- | ------------ |
 	// | 01            | Electronics     | 10000           | 20000         | 10000        |
 	// | 02            | Clothing        | 60000           | 100000        | 40000        |
-	var q = "SELECT * FROM departments";
+
+	// use AS, SUM, GROUP BY, alias
+	let q = "SELECT departments.department_id, departments.department_name, departments.overhead_costs, SUM(products.product_sales) AS total_sales " 
+			+ "FROM departments LEFT JOIN products ON departments.department_name = products.department_name "
+			+ "GROUP BY departments.department_name ORDER BY total_sales DESC";
 	connection.query(q, function(err, res) {
 		if (err) throw err;
 		console.log("+----+-----------------------------+----------------+---------------+--------------+");
@@ -51,9 +55,15 @@ function viewProductSales() {
 		for (let i = 0; i < res.length; i++) {
 			let department_id = res[i].department_id.toString();
 			let department_name = res[i].department_name;
-			let overhead_costs = "$" + res[i].overhead_costs.toString();
-			let product_sales = res[i].product_sales.toString();
-			let total_profit = parseInt(res[i].product_sales) - parseInt(res[i].overhead_costs);
+			let overhead_costs = res[i].overhead_costs.toString();
+			let product_sales;
+			if(res[i].total_sales === null) {
+				product_sales = "0";
+			}
+			else {
+				product_sales = parseFloat(res[i].total_sales).toFixed(2).toString();
+			}
+			let total_profit = (parseFloat(product_sales) - parseFloat(overhead_costs)).toFixed(2).toString();
 			// Update the temp strings by including white space. This will size the tables correctly.
 			while(department_id.length < 2) {
 				department_id = " " + department_id;
@@ -62,11 +72,14 @@ function viewProductSales() {
 				department_name = department_name + " ";
 			}
 			while(overhead_costs.length < 14) {
-				price = " " + price;
+				overhead_costs = " " + overhead_costs;
 			}
-			while(stock_quantity.length < 3) {
-				stock_quantity = " " + stock_quantity;
+			while(product_sales.length < 13) {
+				product_sales = " " + product_sales;
 			}
+			while(total_profit.length < 12) {
+				total_profit = " " + total_profit;
+			}			
 			console.log("| " + department_id + " | " + department_name + " | " + overhead_costs + " | " + product_sales + " | " + total_profit + " |");
 		}
 		console.log("+----+-----------------------------+----------------+---------------+--------------+\n");

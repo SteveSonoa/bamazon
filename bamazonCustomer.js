@@ -49,7 +49,7 @@ function buyItem() {
 			}
 
 			// determine if quantity is high enough
-			if (chosenItem.stock_quantity > parseInt(answer.quantity)) {
+			if (chosenItem.stock_quantity >= parseInt(answer.quantity)) {
 				// There is enough; reduce the stock in the database and provide the customer's total
 				var newQuantity = parseInt(chosenItem.stock_quantity) - parseInt(answer.quantity);
 				var totalPrice = parseFloat(chosenItem.price) * answer.quantity;
